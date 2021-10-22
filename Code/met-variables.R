@@ -95,7 +95,7 @@ for (G in 1:length(GCMs)){
           s = cropped_st_hist[[H]]
           s %>% mutate(tmean = (tmax + tmin)/2) -> s 
           s = select(s, tmean)
-          hist_var[[H]] = s[,,,] #all months
+          hist_var[[H]] = aggregate(s, by = "year", FUN = mean) 
         }
         
         fut_var <- list()
@@ -104,7 +104,7 @@ for (G in 1:length(GCMs)){
           s = cropped_st_fut[[F]]
           s %>% mutate(tmean = (tmax + tmin)/2) -> s 
           s = select(s, tmean)
-          fut_var[[F]] = s[,,,] #all months
+          fut_var[[F]] = aggregate(s, by = "year", FUN = mean) 
         }
         
         hist_var_stars <- Reduce(c, hist_var)
@@ -125,18 +125,18 @@ for (G in 1:length(GCMs)){
         
         
         # ggplot - delta
-        ggplot() + 
-          geom_stars(data = delta, alpha = 0.8) + 
-          geom_sf(data = shp, aes(), fill = NA) + 
-          scale_fill_viridis(direction=1, option = "H",begin = .5, end = 1, 
-                             guide = guide_colorbar(title.position = "top", title.hjust = 0.5)) + #Turbo for temp delta
-          labs(title = paste0("Change in ", var, " -- ", gcm, ".", rcp), fill="mean (F)") +
-          theme(legend.position = "bottom",
-                legend.key.width = unit(2, "cm"),
-                legend.key.height = unit(.2, "cm"),
-                plot.title=element_text(size=12,face="bold",hjust=0.5))
+        #ggplot() + 
+          #geom_stars(data = delta, alpha = 0.8) + 
+          #geom_sf(data = shp, aes(), fill = NA) + 
+          #scale_fill_viridis(direction=1, option = "H",begin = .5, end = 1, 
+                             #guide = guide_colorbar(title.position = "top", title.hjust = 0.5)) + #Turbo for temp delta
+          #labs(title = paste0("Change in ", var, " -- ", gcm, ".", rcp), fill="mean (F)") +
+         # theme(legend.position = "bottom",
+                #legend.key.width = unit(2, "cm"),
+                #legend.key.height = unit(.2, "cm"),
+                #plot.title=element_text(size=12,face="bold",hjust=0.5))
         
-        ggsave(paste(var, gcm, rcp, ".png", sep = '_'),path = model.dir, width = 4.5, height=4)
+        #ggsave(paste(var, gcm, rcp, ".png", sep = '_'),path = model.dir, width = 4.5, height=4)
         
         
         #Precip
@@ -146,50 +146,52 @@ for (G in 1:length(GCMs)){
         for(H in 1:length(cropped_st_hist)){
           s = cropped_st_hist[[H]]
           s = select(s, pcp)
-          hist_var[[H]] = s[,,,] #set for months
+          hist_var[[H]] = aggregate(s, by = "year", FUN = sum)
         }
+  
         
         fut_var <- list()
         
         for(F in 1:length(cropped_st_fut)){
           s = cropped_st_fut[[F]]
           s = select(s, pcp)
-          fut_var[[F]] = s[,,,] #set for months
+          fut_var[[F]] = aggregate(s, by = "year", FUN = sum) #set for months
         }
         
         hist_var_stars <- Reduce(c, hist_var)
-        hist_var_stars %>% mutate(pcp_in = pcp / 25.4) %>% select(pcp_in) -> hist_var_stars
+        #hist_var_stars %>% mutate(pcp_in = pcp / 25.4) %>% select(pcp_in) -> hist_var_stars
+      
         
         fut_var_stars <- Reduce(c, fut_var) 
-        fut_var_stars %>% mutate(pcp_in = pcp / 25.4) %>% select(pcp_in) -> fut_var_stars
+        #fut_var_stars %>% mutate(pcp_in = pcp / 25.4) %>% select(pcp_in) -> fut_var_stars
         
-        sum_hist <- st_apply(hist_var_stars, c("x", "y"), sum) # find sum
-        sum_fut <- st_apply(fut_var_stars, c("x", "y"), sum)
-        delta <- sum_fut - sum_hist
+        mean_hist <- st_apply(hist_var_stars, c("x", "y"), mean) # find mean
+        mean_fut <- st_apply(fut_var_stars, c("x", "y"), mean)
+        delta <- mean_fut - mean_hist
         
         
         #### Add values to Means dfs
-        Baseline_Means$Precip_in[index] = mean(sum_hist$sum, na.rm=TRUE)
-        Future_Means$Precip_in[index] = mean(sum_fut$sum, na.rm=TRUE)
-        Deltas$Precip_in[index] = mean(delta$sum, na.rm=TRUE)
+        Baseline_Means$Precip_in[index] = mean(mean_hist$mean, na.rm=TRUE)
+        Future_Means$Precip_in[index] = mean(mean_fut$mean, na.rm=TRUE)
+        Deltas$Precip_in[index] = mean(delta$mean, na.rm=TRUE)
         
         
         # ggplot - delta
-        ggplot() + 
-          geom_stars(data = delta, alpha = 0.8) + 
-          geom_sf(data = shp, aes(), fill = NA) + 
-          scale_fill_viridis(direction=-1, option = "E",begin = .5, end = 1, 
-                             guide = guide_colorbar(title.position = "top", title.hjust = 0.5)) + #cividis for precip delta
-          labs(title = paste0("Change in ", var, " -- ", gcm, ".", rcp), fill="inches/year") +
-          theme(legend.position = "bottom",
-                legend.key.width = unit(2, "cm"),
-                legend.key.height = unit(.2, "cm"),
-                plot.title=element_text(size=12,face="bold",hjust=0.5))
+        #ggplot() + 
+          #geom_stars(data = delta, alpha = 0.8) + 
+          #geom_sf(data = shp, aes(), fill = NA) + 
+          #scale_fill_viridis(direction=-1, option = "E",begin = .5, end = 1, 
+                             #guide = guide_colorbar(title.position = "top", title.hjust = 0.5)) + #cividis for precip delta
+          #labs(title = paste0("Change in ", var, " -- ", gcm, ".", rcp), fill="inches/year") +
+          #theme(legend.position = "bottom",
+                #legend.key.width = unit(2, "cm"),
+                #legend.key.height = unit(.2, "cm"),
+                #plot.title=element_text(size=12,face="bold",hjust=0.5))
         
-        ggsave(paste(var, gcm, rcp, ".png", sep = '_'),path = model.dir, width = 4.5, height=4)
+        #ggsave(paste(var, gcm, rcp, ".png", sep = '_'),path = model.dir, width = 4.5, height=4)
         
-        rm(hist_var, fut_var, hist_var_stars, fut_var_stars, sum_hist, sum_fut, delta,mean_hist,mean_fut)
+        #rm(hist_var, fut_var, hist_var_stars, fut_var_stars, sum_hist, sum_fut, delta,mean_hist,mean_fut)
       }
     }
     
-    rm(cropped_fut, cropped_hist, cropped_st_fut, cropped_st_hist,l,nc,nc_crop,s)
+    #rm(cropped_fut, cropped_hist, cropped_st_fut, cropped_st_hist,l,nc,nc_crop,s)

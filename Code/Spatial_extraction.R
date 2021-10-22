@@ -29,17 +29,20 @@ GCM.RCP <- sort(apply(expand.grid(GCMs, RCPs), 1, paste, collapse="."))
 
 # Load Spatial Data
 
-boundaries <- st_read('./Data/spatial-data/nps_boundary/nps_boundary_Albers.shp') 
-shp <- filter(boundaries, UNIT_CODE == "BELA")
+centroids <- st_read('./Data/spatial-data/nps_boundary_centroids')
+#boundaries <- st_read('./Data/spatial-data/nps_boundary/nps_boundary_Albers.shp') 
+
+shp <- filter(centroids, UNIT_CODE == "BELA")
+#shp <- filter(boundaries, UNIT_CODE == "BELA")
 
 shp <- st_transform(shp, 3338)
 
 # Plot
 
-tmap_mode('view') # set to interactive viewing - can zoom in and out to make sure the park is in the right place
+#tmap_mode('view') # set to interactive viewing - can zoom in and out to make sure the park is in the right place
 
-tm_shape(shp) + 
-  tm_polygons()
+#tm_shape(shp) + 
+  #tm_polygons()
 
 # Create empty dataframes that will store climate summaries for each GCM.rcp as loop through data
 
