@@ -146,6 +146,7 @@ for (G in 1:length(GCMs)){
         for(H in 1:length(cropped_st_hist)){
           s = cropped_st_hist[[H]]
           s = select(s, pcp)
+          s %>% mutate(monthly_sum = pcp*30) -> s # because NCAR provides a monthly mean. Multiply by 30 to get a sum. 
           hist_var[[H]] = aggregate(s, by = "year", FUN = sum)
         }
   
