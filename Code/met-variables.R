@@ -140,33 +140,34 @@ for (G in 1:length(GCMs)){
         
         
         #Precip
-        #Precip
         var = "Precip (in)"
         hist_var <- list()
         
         for(H in 1:length(cropped_st_hist)){
           s = cropped_st_hist[[H]]
           s = select(s, pcp)
-          hist_var[[H]] = s[,,,] #set for months
+          hist_var[[H]] = aggregate(s, by = "year", FUN = sum)
         }
+  
         
         fut_var <- list()
         
         for(F in 1:length(cropped_st_fut)){
           s = cropped_st_fut[[F]]
           s = select(s, pcp)
-          fut_var[[F]] = s[,,,] #set for months
+          fut_var[[F]] = aggregate(s, by = "year", FUN = sum) #set for months
         }
         
         hist_var_stars <- Reduce(c, hist_var)
         hist_var_stars %>% mutate(pcp_in = pcp / 25.4) %>% select(pcp_in) -> hist_var_stars
+      
         
         fut_var_stars <- Reduce(c, fut_var) 
         fut_var_stars %>% mutate(pcp_in = pcp / 25.4) %>% select(pcp_in) -> fut_var_stars
         
-        sum_hist <- st_apply(hist_var_stars, c("x", "y"), FUN=function(x) sum(x)/length(historical.period)) # find sum
-        sum_fut <- st_apply(fut_var_stars, c("x", "y"), FUN=function(x) sum(x)/length(future.period))
-        delta <- sum_fut - sum_hist
+        mean_hist <- st_apply(hist_var_stars, c("x", "y"), mean) # find mean
+        mean_fut <- st_apply(fut_var_stars, c("x", "y"), mean)
+        delta <- mean_fut - mean_hist
         
         
         #### Add values to Means dfs
