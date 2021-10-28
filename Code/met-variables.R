@@ -159,11 +159,11 @@ for (G in 1:length(GCMs)){
         }
         
         hist_var_stars <- Reduce(c, hist_var)
-        #hist_var_stars %>% mutate(pcp_in = pcp / 25.4) %>% select(pcp_in) -> hist_var_stars
+        hist_var_stars %>% mutate(pcp_in = pcp / 25.4) %>% select(pcp_in) -> hist_var_stars
       
         
         fut_var_stars <- Reduce(c, fut_var) 
-        #fut_var_stars %>% mutate(pcp_in = pcp / 25.4) %>% select(pcp_in) -> fut_var_stars
+        fut_var_stars %>% mutate(pcp_in = pcp / 25.4) %>% select(pcp_in) -> fut_var_stars
         
         mean_hist <- st_apply(hist_var_stars, c("x", "y"), mean) # find mean
         mean_fut <- st_apply(fut_var_stars, c("x", "y"), mean)
