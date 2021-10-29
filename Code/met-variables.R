@@ -7,8 +7,8 @@ for (G in 1:length(GCMs)){
     hist_filelist = Filter(function(x) grepl(paste(historical.period, collapse = "|"), x), file.list)
     fut_filelist = Filter(function(x) grepl(paste(future.period, collapse = "|"), x), file.list)
     
-    model.dir <- paste0(plot.dir,"/",gcm,".",rcp)
-    dir.create(model.dir,showWarnings=FALSE)
+    #model.dir <- paste0(plot.dir,"/",gcm,".",rcp)
+    #dir.create(model.dir,showWarnings=FALSE)
     
     # index for df
     GR <- paste(gcm,rcp,sep=".")
@@ -156,15 +156,16 @@ for (G in 1:length(GCMs)){
         for(F in 1:length(cropped_st_fut)){
           s = cropped_st_fut[[F]]
           s = select(s, pcp)
-          fut_var[[F]] = aggregate(s, by = "year", FUN = sum) #set for months
+          s %>% mutate(monthly_sum = pcp*30) -> s
+          fut_var[[F]] = aggregate(s, by = "year", FUN = sum) 
         }
         
         hist_var_stars <- Reduce(c, hist_var)
-        hist_var_stars %>% mutate(pcp_in = pcp / 25.4) %>% select(pcp_in) -> hist_var_stars
+        hist_var_stars %>% mutate(pcp_in = monthly_sum / 25.4) %>% select(pcp_in) -> hist_var_stars
       
         
         fut_var_stars <- Reduce(c, fut_var) 
-        fut_var_stars %>% mutate(pcp_in = pcp / 25.4) %>% select(pcp_in) -> fut_var_stars
+        fut_var_stars %>% mutate(pcp_in = monthly_sum / 25.4) %>% select(pcp_in) -> fut_var_stars
         
         mean_hist <- st_apply(hist_var_stars, c("x", "y"), mean) # find mean
         mean_fut <- st_apply(fut_var_stars, c("x", "y"), mean)

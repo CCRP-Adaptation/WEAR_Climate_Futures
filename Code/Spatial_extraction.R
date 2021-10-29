@@ -3,7 +3,10 @@
 ###############################
 
 # Use WRST Spatial_T1_extraction.Rmd as a template to pull data for WEAR
-# Starting with BELA (Bering Land Bridge National Preserve)
+# BELA (Bering Land Bridge National Preserve)
+# CAKR (Cape Krusenstern)
+# NOAT (Noatak)
+# (Kobuk Valley)
 
 rm(list = ls())
 
@@ -12,15 +15,12 @@ library(tmap); library(tmaptools)
 
 # Initials
 
+parkID <- "KOVA"
+
 data.dir <- "D:/NCAR_AK/met/monthly/BCSD/" 
-#vic.dir <- "D:/NCAR_AK/vic_hydro/monthly/BCSD"
-plot.dir <- "C:/Users/adillon/Documents/RSS/WEAR/Plots"
 
 historical.period <- as.character(seq(1950,1999,1))
 future.period <- as.character(seq(2025,2055,1))
-
-#area <- 'copper_plateau' #wrst_mtns, copper_plateau, coastal_mtns, eastern_coast
-
 
 GCMs <- list.files(path = data.dir)
 RCPs <- c("rcp45", "rcp85")
@@ -32,8 +32,7 @@ GCM.RCP <- sort(apply(expand.grid(GCMs, RCPs), 1, paste, collapse="."))
 centroids <- st_read('./Data/spatial-data/nps_boundary_centroids')
 #boundaries <- st_read('./Data/spatial-data/nps_boundary/nps_boundary_Albers.shp') 
 
-shp <- filter(centroids, UNIT_CODE == "BELA")
-#shp <- filter(boundaries, UNIT_CODE == "BELA")
+shp <- filter(centroids, UNIT_CODE == parkID)
 
 shp <- st_transform(shp, 3338)
 
@@ -61,7 +60,7 @@ names(Deltas) <- c("GCM", "RCP", variables)
 
 source('./Code/met-variables.R')
 
-#save.image("./Data/RData/BELA_environment.RData")
+save.image(paste0("./Data/RData/", parkID, "_environment.RData"))
 
 # Run scatterplot
 scatterplot <- function(df, X, Y, title,xaxis,yaxis){
@@ -85,3 +84,4 @@ scatterplot <- function(df, X, Y, title,xaxis,yaxis){
 
 scatterplot(df=Deltas,X=Tmean_F,Y=Precip_in,title="Tmean vs Precip scatterplot",xaxis="Avg Annual Temp (F)",yaxis="Avg Annual Precip (in)")
 
+ggsave(filename = paste0('./Plots/', parkID, "_scatterplot.png"))
